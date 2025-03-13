@@ -1,0 +1,7 @@
+gradio
+pandas
+sqlite3
+matplotlib
+pydantic-ai
+ollama
+openai
