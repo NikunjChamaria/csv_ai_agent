@@ -18,13 +18,13 @@ def upload_csv_and_initialize(csv_path):
     describe_data = df.describe().to_string()
     agent = initialize_agent(columns, describe_data)
     
-    return "✅ CSV uploaded & AI system updated!"
+    return "CSV uploaded & AI system updated!"
 
 #Processes the user's question and returns AI + SQL response.
 def process_query(user_prompt: str):
     global agent
     if agent is None:
-        return "❌ Please upload a CSV file first.", None
+        return "Please upload a CSV file first.", None
 
     response_data = ask_ai(agent, user_prompt)
     if "error" in response_data:

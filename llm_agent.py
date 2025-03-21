@@ -13,7 +13,7 @@ class Graph(BaseModel):
 
 class Answer(BaseModel):
     query: str = Field(..., description="Generated SQL query based on user input.")
-    text: str = Field(..., description="Textual explanation or summary of the SQL query.")
+    text: str = Field(..., description="One line answer to the question using the data")
     graph: Graph = Field(..., description="Graph metadata for visualization, including type and axes.")
 
 
@@ -23,7 +23,7 @@ def initialize_agent(columns: str, describe_data: str):
     The dataset has the following columns: {columns}.
     Here is the statistical summary of the dataset:
     {describe_data}
-    When asked a question, generate a valid SQL query that can run on the SQLite Table `{table_name}` and return all rows.
+    Generate a valid SQL that can run on the SQLite Table `{table_name}` and print all columns
     Specify the type of graph and the column(s) to be plotted.
     """
 

@@ -2,7 +2,6 @@
 
 import time
 import ollama
-import pandas as pd
 
 models = ["llama3.1:8b-instruct-q2_K","llama3.1:8b-instruct-q4_K_M","llama3.1:8b","llama3.1:latest "]
 
