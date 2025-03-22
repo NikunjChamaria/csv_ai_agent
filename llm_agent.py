@@ -10,8 +10,6 @@ import ollama
 class Graph(BaseModel):
     x: Optional[str] = Field(None, description="Column name to be used for the x-axis.")
     y: Optional[str] = Field(None, description="Column name to be used for the y-axis.")
-    x_data: Optional[List[Union[str, float, int]]] = Field(None, description="Data points for the x-axis.")
-    y_data: Optional[List[Union[str, float, int]]] = Field(None, description="Data points for the y-axis.")
 
 class Answer(BaseModel):
     query: str = Field(..., description="Generated SQL query based on user input.")
@@ -60,7 +58,7 @@ async def ask_ai_async(agent: Agent, user_prompt: str):
         print("General Error in ask_ai:", str(e))
         return Answer(
             query="",
-            graph=Graph( x=None, y=None,x_data=None,y_data=None)
+            graph=Graph( x=None, y=None)
         )
 
 def ask_ai(agent: Agent, user_prompt: str):
