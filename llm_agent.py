@@ -4,10 +4,11 @@ from pydantic_ai.agent import Agent
 from config import llm_model, llm_base_url, table_name
 import asyncio
 from pydantic import BaseModel, Field
-from typing import  Optional,List,Union
+from typing import Literal, Optional,List,Union
 import ollama
 
 class Graph(BaseModel):
+    type: Literal["bar", "line", "scatter"] = Field(..., description="Type of graph to be plotted.")
     x: Optional[str] = Field(None, description="Column name to be used for the x-axis.")
     y: Optional[str] = Field(None, description="Column name to be used for the y-axis.")
 
@@ -58,7 +59,7 @@ async def ask_ai_async(agent: Agent, user_prompt: str):
         print("General Error in ask_ai:", str(e))
         return Answer(
             query="",
-            graph=Graph( x=None, y=None)
+            graph=Graph(type="bar", x=None, y=None)
         )
 
 def ask_ai(agent: Agent, user_prompt: str):
