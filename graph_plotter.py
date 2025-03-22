@@ -1,30 +1,23 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import sqlite3
-from config import db_name, table_name
+import pandas as pd
 from llm_agent import Graph
 
 #Generates a graph based on AI instructions.
-def generate_graph(graph_data:Graph):
+def generate_graph(graph_data:Graph,df:pd.DataFrame):
     try:
         if not graph_data or "type" not in graph_data:
             return None
 
-        conn = sqlite3.connect(db_name)
-
-        cursor = conn.cursor()
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns = [row[1] for row in cursor.fetchall()]
-        conn.close()
-
+        columns=df.columns
         if not columns:
             return None  
         
         x_column = graph_data.x or columns[0]  
-        y_column = graph_data.y or (columns[1] if len(columns) > 1 else columns[0])  
-        conn = sqlite3.connect(db_name)
-        df = pd.read_sql_query(f"SELECT {x_column}, {y_column} FROM {table_name}", conn)
-        conn.close()
+        y_column = graph_data.y or (columns[1] if len(columns) > 1 else columns[0])
+        
+        print(x_column)
+        print(y_column)  
 
         fig, ax = plt.subplots(figsize=(6, 4))
 

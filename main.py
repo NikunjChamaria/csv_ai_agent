@@ -5,15 +5,14 @@ from query_processor import execute_sql_query
 from graph_plotter import generate_graph
 from utils import format_response
 
-agent = None  
+agent = None 
+df = None 
 
 #Handles CSV file upload and AI system initialization.
 def upload_csv_and_initialize(csv_path):
     global agent
-    df = create_sqlite_db_from_csv(csv_path)
-    if isinstance(df, str): 
-        return df
-    
+    global df
+    df = create_sqlite_db_from_csv(csv_path)   
     columns = ", ".join(df.columns)
     describe_data = df.describe().to_string()
     agent = initialize_agent(columns, describe_data)
@@ -23,6 +22,7 @@ def upload_csv_and_initialize(csv_path):
 #Processes the user's question and returns AI + SQL response.
 def process_query(user_prompt: str):
     global agent
+    global df
     if agent is None:
         return "Please upload a CSV file first.", None
 
@@ -36,13 +36,13 @@ def process_query(user_prompt: str):
     if response_data.query:
         sql_result, column_names = execute_sql_query(response_data.query)
         if sql_result:
-            final_response += format_response(user_prompt, sql_result, column_names)
+            final_response +="\n" + format_response(user_prompt, sql_result, column_names)
 
     if response_data.text:
-        final_response += "\n" + response_data.text
+        final_response +=  response_data.text
 
     if response_data.graph:
-        graph_image = generate_graph(response_data.graph)
+        graph_image = generate_graph(response_data.graph,df=df)
 
     return final_response, graph_image
 

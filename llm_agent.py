@@ -3,7 +3,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.agent import Agent
 from config import llm_model, llm_base_url, table_name
 import asyncio
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field
 from typing import Literal, Optional
 
 class Graph(BaseModel):
@@ -13,18 +13,17 @@ class Graph(BaseModel):
 
 class Answer(BaseModel):
     query: str = Field(..., description="Generated SQL query based on user input.")
-    text: str = Field(..., description="One line answer to the question using the data")
+    text: str = Field(..., description="One-line answer to the question using the data.")
     graph: Graph = Field(..., description="Graph metadata for visualization, including type and axes.")
 
-
-#Initializes the AI agent with the system prompt.
+# Initializes the AI agent with the system prompt.
 def initialize_agent(columns: str, describe_data: str):
     system_prompt = f"""
     The dataset has the following columns: {columns}.
-    Here is the statistical summary of the dataset:
+    Statistical summary for one line answer:
     {describe_data}
-    Generate a valid SQL that can run on the SQLite Table `{table_name}` and print all columns
-    Specify the type of graph and the column(s) to be plotted.
+    Generate a valid SQL query that can run on the SQLite Table `{table_name}` and return all columns.
+    Also, specify the type of graph and the column(s) to be plotted.
     """
 
     ollama_model = OpenAIModel(
@@ -32,19 +31,28 @@ def initialize_agent(columns: str, describe_data: str):
         provider=OpenAIProvider(base_url=llm_base_url),
     )
 
-    return Agent(ollama_model, system_prompt=system_prompt,result_type=Answer)
+    agent = Agent(
+        ollama_model,
+        system_prompt=system_prompt,
+        result_type=Answer,
+    )
+    
+    return agent
 
-def ask_ai(agent: Agent, user_prompt: str):
+
+
+async def ask_ai_async(agent: Agent, user_prompt: str):
     try:
-        response = asyncio.run(agent.run(user_prompt))
-        print("Raw Response:", response)
-        return response.data
+        response = await agent.run(user_prompt)
+        print("🔹 Validated Response:", response)
+        return response
     except Exception as e:
-        print("Error in ask_ai:", str(e))
+        print("General Error in ask_ai:", str(e))
         return Answer(
             query="",
             text="Failed to generate a response due to an error.",
             graph=Graph(type="bar", x=None, y=None)
         )
 
-
+def ask_ai(agent: Agent, user_prompt: str):
+    return asyncio.run(ask_ai_async(agent, user_prompt))
