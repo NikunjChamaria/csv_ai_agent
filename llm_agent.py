@@ -4,26 +4,29 @@ from pydantic_ai.agent import Agent
 from config import llm_model, llm_base_url, table_name
 import asyncio
 from pydantic import BaseModel, Field
-from typing import Literal, Optional
+from typing import  Optional,List,Union
+import ollama
 
 class Graph(BaseModel):
-    type: Literal["bar", "line", "scatter", "pie"] = Field(..., description="Type of graph to be plotted.")
     x: Optional[str] = Field(None, description="Column name to be used for the x-axis.")
     y: Optional[str] = Field(None, description="Column name to be used for the y-axis.")
+    x_data: Optional[List[Union[str, float, int]]] = Field(None, description="Data points for the x-axis.")
+    y_data: Optional[List[Union[str, float, int]]] = Field(None, description="Data points for the y-axis.")
 
 class Answer(BaseModel):
     query: str = Field(..., description="Generated SQL query based on user input.")
-    text: str = Field(..., description="One-line answer to the question using the data.")
     graph: Graph = Field(..., description="Graph metadata for visualization, including type and axes.")
+    
+system_prompt=None
 
 # Initializes the AI agent with the system prompt.
 def initialize_agent(columns: str, describe_data: str):
+    global system_prompt
     system_prompt = f"""
     The dataset has the following columns: {columns}.
     Statistical summary for one line answer:
     {describe_data}
     Generate a valid SQL query that can run on the SQLite Table `{table_name}` and return all columns.
-    Also, specify the type of graph and the column(s) to be plotted.
     """
 
     ollama_model = OpenAIModel(
@@ -42,16 +45,22 @@ def initialize_agent(columns: str, describe_data: str):
 
 
 async def ask_ai_async(agent: Agent, user_prompt: str):
+    global system_prompt
     try:
-        response = await agent.run(user_prompt)
-        print("🔹 Validated Response:", response)
-        return response
+        response =  ollama.chat(
+            model=llm_model,
+            messages=[        
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}],
+            format=Answer.model_json_schema(),
+        )
+        print("Validated Response:", response.message.content)
+        return Answer.model_validate_json(response.message.content)
     except Exception as e:
         print("General Error in ask_ai:", str(e))
         return Answer(
             query="",
-            text="Failed to generate a response due to an error.",
-            graph=Graph(type="bar", x=None, y=None)
+            graph=Graph( x=None, y=None,x_data=None,y_data=None)
         )
 
 def ask_ai(agent: Agent, user_prompt: str):

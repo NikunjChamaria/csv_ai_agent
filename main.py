@@ -15,6 +15,7 @@ def upload_csv_and_initialize(csv_path):
     df = create_sqlite_db_from_csv(csv_path)   
     columns = ", ".join(df.columns)
     describe_data = df.describe().to_string()
+    describe_data+="\n"+df.head().to_string()
     agent = initialize_agent(columns, describe_data)
     
     return "CSV uploaded & AI system updated!"
