@@ -51,7 +51,7 @@ with gr.Blocks() as demo:
     user_prompt = gr.Textbox(label="Ask a question")
     submit_btn = gr.Button("Get Answer")
     response_box = gr.Textbox(label="Response", interactive=False)
-    graph_output = gr.BarPlot(label="Generated Graph")
+    graph_output = gr.Plot(label="Generated Graph")
 
     csv_file.upload(upload_csv_and_initialize, inputs=[csv_file], outputs=[upload_status])
     submit_btn.click(process_query, inputs=[user_prompt], outputs=[response_box, graph_output])
